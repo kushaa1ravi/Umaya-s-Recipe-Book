@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 192 192" width="192" height="192">
+  <rect width="192" height="192" rx="42" fill="#E86A33" />
+  <circle cx="96" cy="96" r="64" fill="#FFE5D9" />
+  <!-- Chef hat / rolling pin / recipe book illustration -->
+  <path d="M68 116 C68 128 124 128 124 116 L124 104 L68 104 Z" fill="#E86A33" />
+  <path d="M60 88 C55 72 75 62 82 72 C86 56 106 56 110 72 C118 62 138 72 132 88 C138 100 126 106 122 104 L70 104 C66 106 54 100 60 88 Z" fill="#FFFFFF" />
+  <path d="M78 126 L114 126" stroke="#FFFFFF" stroke-width="4" stroke-linecap="round" />
+  <circle cx="96" cy="85" r="4" fill="#E86A33" />
+  <circle cx="85" cy="89" r="3" fill="#E86A33" />
+  <circle cx="107" cy="89" r="3" fill="#E86A33" />
+</svg>

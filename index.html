@@ -1,0 +1,1352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Umaya's Heirloom Recipes</title>
+  <meta name="description" content="Cherished heirloom family recipes preserved across generations." />
+
+  <!-- PWA Meta -->
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Umaya's" />
+  <meta name="theme-color" content="#F2F2F7" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🍲</text></svg>" />
+
+  <!-- Tailwind CSS & Lucide Icons -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+
+  <style>
+    :root {
+      --safe-top: env(safe-area-inset-top, 0px);
+      --safe-bottom: env(safe-area-inset-bottom, 0px);
+    }
+    body {
+      background-color: #F2F2F7;
+      color: #1C1C1E;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+    }
+    
+    /* Scrollbar Hiding */
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+    
+    /* Horizontal scroll container for navigation */
+    .horizontal-scroll-bar {
+      display: flex;
+      overflow-x: auto;
+      white-space: nowrap;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none;
+    }
+    .horizontal-scroll-bar::-webkit-scrollbar { display: none; }
+    
+    /* Shadows & Modals */
+    .card-shadow { box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 0, 0, 0.03); }
+    .modal-backdrop { background-color: rgba(0, 0, 0, 0.45); backdrop-filter: blur(4px); }
+    .safe-top-padding { padding-top: calc(var(--safe-top) + 12px); }
+    .safe-bottom-padding { padding-bottom: calc(var(--safe-bottom) + 8px); }
+
+    /* Strict 3-Tier Difficulty Badges */
+    .badge-diff-easy {
+      background-color: #ECFDF5;
+      color: #065F46;
+      border: 1px solid #6EE7B7;
+    }
+    .badge-diff-medium {
+      background-color: #FFFBEB;
+      color: #B45309;
+      border: 1px solid #FCD34D;
+    }
+    .badge-diff-umaya {
+      background: linear-gradient(135deg, #FEF3C7 0%, #F59E0B 100%);
+      color: #78350F;
+      border: 1px solid #D97706;
+      box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
+      text-shadow: 0 1px 1px rgba(255,255,255,0.4);
+      font-weight: 800;
+      letter-spacing: 0.02em;
+    }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col justify-between pb-24">
+
+  <!-- ========================================================= -->
+  <!-- 1. STICKY HEADER & CATEGORY NAVIGATION                    -->
+  <!-- ========================================================= -->
+  <header class="sticky top-0 z-30 bg-[#F2F2F7]/95 backdrop-blur-md safe-top-padding pb-3 px-4 border-b border-black/[0.04]">
+    <div class="max-w-xl mx-auto flex flex-col gap-3">
+      
+      <!-- Top Brand Row -->
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-full bg-[#E86A33]/15 text-[#E86A33] flex items-center justify-center font-bold text-lg shadow-xs">
+            🍲
+          </div>
+          <div>
+            <h1 class="text-lg font-bold text-[#1C1C1E] tracking-tight flex items-center gap-1.5">
+              <span>Umaya's</span>
+              <span class="text-[10px] font-semibold uppercase tracking-wider px-1.5 py-0.5 rounded-full bg-[#E86A33]/10 text-[#E86A33] border border-[#E86A33]/20">
+                Heirloom
+              </span>
+            </h1>
+            <p id="header-recipe-count" class="text-[11px] text-[#8E8E93] font-medium">Local Edition</p>
+          </div>
+        </div>
+
+        <!-- Sync Badge & Settings Trigger -->
+        <div class="flex items-center gap-2">
+          <div id="cloud-sync-badge" class="flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-medium bg-stone-200 text-stone-600 border border-stone-300 shadow-2xs">
+            <i data-lucide="hard-drive" class="w-3.5 h-3.5"></i>
+            <span id="cloud-sync-status-text">Local Data</span>
+          </div>
+          <button id="btn-open-settings" class="w-8 h-8 rounded-full bg-white hover:bg-[#E5E5EA] border border-black/[0.06] flex items-center justify-center text-[#636366] transition-colors" title="Settings">
+            <i data-lucide="settings" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+
+      <!-- Live Search Bar -->
+      <div class="relative">
+        <i data-lucide="search" class="w-4 h-4 text-[#8E8E93] absolute left-3.5 top-1/2 -translate-y-1/2"></i>
+        <input type="text" id="search-input" placeholder="Search recipes, tags, ingredients..." class="w-full bg-[#E3E3E8] focus:bg-white text-[#1C1C1E] placeholder-[#8E8E93] text-sm pl-9 pr-8 py-2 rounded-xl border border-transparent focus:border-[#E86A33] focus:ring-1 focus:ring-[#E86A33] outline-none transition-all" />
+        <button id="btn-clear-search" class="hidden absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 rounded-full bg-[#8E8E93] text-white flex items-center justify-center text-[10px]">✕</button>
+      </div>
+
+      <!-- Main Category Filter Bar -->
+      <div id="main-category-bar" class="horizontal-scroll-bar items-center gap-1.5 pb-1 -mx-1 px-1">
+        <!-- Injected via JavaScript Event Delegation -->
+      </div>
+
+      <!-- Hierarchical Sub-Menu Bar -->
+      <div id="sub-menu-container" class="hidden bg-white/90 backdrop-blur-xs rounded-xl p-2 border border-[#E86A33]/20 shadow-xs transition-all duration-200">
+        <div class="flex items-center justify-between px-1.5 pb-1.5 mb-1 border-b border-black/[0.04]">
+          <span id="sub-menu-title" class="text-[11px] font-bold text-[#E86A33] uppercase tracking-wider flex items-center gap-1.5"></span>
+          <span class="text-[10px] text-[#8E8E93] font-medium">Filter recipes</span>
+        </div>
+        <div id="sub-menu-grid" class="grid gap-1.5">
+          <!-- Injected via JavaScript Event Delegation -->
+        </div>
+      </div>
+
+    </div>
+  </header>
+
+  <!-- ========================================================= -->
+  <!-- 2. MAIN FEED & RECIPE LIST                                -->
+  <!-- ========================================================= -->
+  <main class="flex-1 max-w-xl mx-auto w-full px-4 pt-3">
+    
+    <!-- Favorites Banner -->
+    <div id="favorites-header" class="hidden mb-3 flex items-center gap-2">
+      <i data-lucide="heart" class="w-5 h-5 fill-rose-500 text-rose-500"></i>
+      <h2 class="text-lg font-bold text-[#1C1C1E]">Favorite Recipes</h2>
+    </div>
+
+    <!-- Recipe Cards Container -->
+    <div id="recipe-list" class="grid grid-cols-1 gap-3.5 pb-6">
+      <!-- Injected via JavaScript -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="empty-state" class="hidden bg-white rounded-2xl p-8 border border-black/[0.06] text-center my-6 space-y-3 card-shadow">
+      <div class="w-14 h-14 rounded-2xl bg-orange-50 text-[#E86A33] mx-auto flex items-center justify-center">
+        <i data-lucide="book-open" class="w-7 h-7"></i>
+      </div>
+      <h3 class="text-base font-bold text-[#1C1C1E]">No recipes found</h3>
+      <p class="text-xs text-[#636366] max-w-xs mx-auto leading-relaxed">Adjust your filters or add a new heirloom recipe.</p>
+    </div>
+
+    <!-- Footer -->
+    <footer class="pt-6 pb-4 text-center border-t border-black/[0.04] mt-4 space-y-2">
+      <div class="text-[11px] text-[#8E8E93] font-medium bg-[#E5E5EA]/50 inline-block px-3 py-1 rounded-full mb-1">
+        <i data-lucide="hard-drive" class="w-3 h-3 inline-block -mt-0.5"></i> Private Local Storage Mode
+      </div>
+      <p class="text-[10px] text-[#AEAEB2] tracking-tight block">Preserving authentic family recipes entirely on your device</p>
+    </footer>
+  </main>
+
+  <!-- ========================================================= -->
+  <!-- 3. BOTTOM TAB NAVIGATION BAR                              -->
+  <!-- ========================================================= -->
+  <nav class="fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-black/[0.06] safe-bottom-padding pt-2 px-6">
+    <div class="max-w-md mx-auto flex items-center justify-around">
+      <button id="tab-recipes" class="nav-tab-btn flex flex-col items-center gap-1 text-[#E86A33]">
+        <i data-lucide="book-open" class="w-5 h-5 stroke-[2.2]"></i>
+        <span class="text-[10px] font-bold">Recipes</span>
+      </button>
+      <button id="tab-favorites" class="nav-tab-btn flex flex-col items-center gap-1 text-[#8E8E93] relative">
+        <i data-lucide="heart" class="w-5 h-5 stroke-[2]"></i>
+        <span class="text-[10px] font-medium">Favorites</span>
+        <span id="fav-badge" class="hidden absolute -top-1 right-2 min-w-[16px] h-4 px-1 rounded-full bg-rose-500 text-white text-[9px] font-bold flex items-center justify-center">0</span>
+      </button>
+      <button id="tab-add" class="nav-tab-btn flex flex-col items-center gap-1 text-[#8E8E93]">
+        <div class="w-8 h-8 rounded-full bg-[#E86A33] text-white flex items-center justify-center -mt-2 shadow-sm shadow-orange-500/30">
+          <i data-lucide="plus" class="w-5 h-5 stroke-[2.5]"></i>
+        </div>
+        <span class="text-[10px] font-medium">Add</span>
+      </button>
+    </div>
+  </nav>
+
+  <!-- ========================================================= -->
+  <!-- 4. MODAL: RECIPE DETAIL & INLINE EDIT                     -->
+  <!-- ========================================================= -->
+  <div id="modal-recipe-detail" class="hidden fixed inset-0 z-50 bg-[#F2F2F7] overflow-y-auto">
+    <div class="max-w-xl mx-auto min-h-screen bg-white pb-20 shadow-xl flex flex-col justify-between">
+      <div>
+        <div class="sticky top-0 z-30 bg-white/95 backdrop-blur-md px-4 py-3 border-b border-black/[0.06] flex items-center justify-between">
+          <button id="btn-detail-back" class="p-2 -ml-2 rounded-full hover:bg-[#F2F2F7] text-[#1C1C1E] flex items-center gap-1 text-sm font-semibold">
+            <i data-lucide="chevron-left" class="w-5 h-5"></i><span>Back</span>
+          </button>
+          <div class="flex items-center gap-1">
+            <button id="btn-detail-share" class="p-2 rounded-full hover:bg-stone-100 text-[#8E8E93]" title="Share Recipe">
+              <i data-lucide="share" class="w-5 h-5"></i>
+            </button>
+            <button id="btn-detail-fav" class="p-2 rounded-full hover:bg-rose-50 text-[#8E8E93]" title="Favorite">
+              <i data-lucide="heart" class="w-5 h-5"></i>
+            </button>
+            <button id="btn-detail-cook" class="px-3 py-1.5 rounded-full bg-[#E86A33]/10 text-[#E86A33] text-xs font-bold flex items-center gap-1 border border-[#E86A33]/20">
+              <i data-lucide="flame" class="w-3.5 h-3.5"></i><span>Cook Mode</span>
+            </button>
+            <button id="btn-detail-edit-toggle" class="p-2 rounded-full hover:bg-[#F2F2F7] text-[#8E8E93]" title="Edit Recipe">
+              <i data-lucide="edit-3" class="w-4 h-4"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- VIEW MODE -->
+        <div id="detail-view-container" class="p-5 space-y-5">
+          <div>
+            <div id="detail-view-categories" class="flex items-center gap-1.5 mb-2 flex-wrap"></div>
+            <h1 id="detail-view-title" class="text-2xl font-extrabold text-[#1C1C1E] tracking-tight leading-tight"></h1>
+          </div>
+          <div id="detail-view-story-box" class="p-4 rounded-xl bg-[#FFF8F3] border border-orange-200/80 flex items-start gap-3 shadow-xs">
+            <i data-lucide="quote" class="w-5 h-5 text-[#E86A33] shrink-0 mt-0.5"></i>
+            <div>
+              <span class="text-[11px] font-bold uppercase tracking-wider text-[#E86A33] block mb-0.5">Umaya's Story & Tradition</span>
+              <p id="detail-view-story-text" class="text-sm text-[#48484A] italic leading-relaxed"></p>
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-2 py-3 px-3.5 rounded-xl bg-[#F2F2F7] text-center">
+            <div><span class="text-[11px] font-medium text-[#8E8E93] block">Prep</span><span id="detail-view-prep" class="text-sm font-bold text-[#1C1C1E]"></span></div>
+            <div class="border-x border-black/[0.08]"><span class="text-[11px] font-medium text-[#8E8E93] block">Cook / Brew</span><span id="detail-view-cook" class="text-sm font-bold text-[#E86A33]"></span></div>
+            <div><span class="text-[11px] font-medium text-[#8E8E93] block">Servings</span><div id="detail-view-servings-container"></div></div>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold uppercase tracking-wider text-[#636366] mb-3 flex items-center gap-1.5">
+              <i data-lucide="utensils" class="w-4 h-4 text-[#E86A33]"></i><span>Ingredients</span>
+            </h3>
+            <div id="detail-view-ingredients" class="space-y-2"></div>
+          </div>
+          <div>
+            <h3 class="text-sm font-bold uppercase tracking-wider text-[#636366] mb-3 flex items-center gap-1.5">
+              <i data-lucide="list-ordered" class="w-4 h-4 text-[#E86A33]"></i><span>Method & Instructions</span>
+            </h3>
+            <div id="detail-view-steps" class="space-y-3"></div>
+          </div>
+          <div id="detail-view-notes-box" class="p-3.5 rounded-xl bg-amber-50/60 border border-amber-200/60">
+            <span class="text-[11px] font-bold text-amber-900 uppercase tracking-wider block mb-1">Cook's Secret Note</span>
+            <p id="detail-view-notes-text" class="text-xs text-amber-950 leading-relaxed"></p>
+          </div>
+        </div>
+
+        <!-- EDIT MODE -->
+        <div id="detail-edit-container" class="hidden p-5 space-y-4">
+          <div class="p-3 rounded-xl bg-amber-50 border border-amber-200 text-xs text-amber-900 flex items-center justify-between font-medium">
+            <span>✏️ You are editing this heirloom recipe.</span>
+            <button id="btn-cancel-edit" class="underline font-bold">Discard</button>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#636366] uppercase mb-1">Recipe Title</label>
+            <input type="text" id="edit-title" class="w-full bg-[#F2F2F7] focus:bg-white text-base font-bold p-3 rounded-xl border border-transparent focus:border-[#E86A33] outline-none" />
+          </div>
+          
+          <!-- Strict 3-Tier Difficulty Selector -->
+          <div>
+            <label class="block text-xs font-bold text-[#636366] uppercase mb-1.5">Difficulty Level (Required)</label>
+            <div id="edit-difficulty-selector" data-diff="Medium" class="grid grid-cols-3 gap-1.5 p-1 bg-[#F2F2F7] rounded-xl border border-black/[0.04]">
+              <button type="button" data-level="Easy" class="diff-btn py-2 text-xs font-medium rounded-lg transition-all text-center text-[#636366]">🌱 Easy</button>
+              <button type="button" data-level="Medium" class="diff-btn py-2 text-xs font-medium rounded-lg transition-all text-center text-[#636366]">⚖️ Medium</button>
+              <button type="button" data-level="Umaya Mode" class="diff-btn py-2 text-xs font-medium rounded-lg transition-all text-center text-[#636366]">👑 Umaya Mode</button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#636366] uppercase mb-1 flex items-center justify-between">
+              <span>Categories & Sections (Multi-Select)</span>
+              <span class="text-[10px] text-[#E86A33] font-normal">Tap pills to toggle</span>
+            </label>
+            <div id="edit-category-pills-container" class="space-y-2.5 p-3 rounded-xl bg-[#F2F2F7] border border-black/[0.04]">
+              <!-- Event Delegation Handled -->
+            </div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div><label class="block text-[11px] font-bold text-[#636366] uppercase mb-1">Prep</label><input type="text" id="edit-prep" class="w-full bg-[#F2F2F7] p-2 rounded-xl text-xs outline-none" /></div>
+            <div><label class="block text-[11px] font-bold text-[#636366] uppercase mb-1">Cook</label><input type="text" id="edit-cook" class="w-full bg-[#F2F2F7] p-2 rounded-xl text-xs outline-none" /></div>
+            <div><label class="block text-[11px] font-bold text-[#636366] uppercase mb-1">Servings</label><input type="text" id="edit-servings" class="w-full bg-[#F2F2F7] p-2 rounded-xl text-xs outline-none" /></div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#636366] uppercase mb-1 flex items-center gap-1">
+              <i data-lucide="quote" class="w-3.5 h-3.5 text-[#E86A33]"></i><span>Umaya's Story</span>
+            </label>
+            <textarea id="edit-umaya-story" rows="3" class="w-full bg-[#F2F2F7] focus:bg-white text-sm p-3 rounded-xl border border-transparent focus:border-[#E86A33] outline-none leading-relaxed"></textarea>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-xs font-bold text-[#636366] uppercase">Ingredients</label>
+              <button id="btn-add-edit-ingredient" class="text-xs font-bold text-[#E86A33] hover:underline">+ Add Item</button>
+            </div>
+            <div id="edit-ingredients-list" class="space-y-1.5"></div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-xs font-bold text-[#636366] uppercase">Instructions</label>
+              <button id="btn-add-edit-step" class="text-xs font-bold text-[#E86A33] hover:underline">+ Add Step</button>
+            </div>
+            <div id="edit-steps-list" class="space-y-1.5"></div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#636366] uppercase mb-1">Cook's Secret Note</label>
+            <textarea id="edit-notes" rows="2" class="w-full bg-[#F2F2F7] p-2.5 rounded-xl text-xs outline-none"></textarea>
+          </div>
+          <div class="pt-3 flex items-center gap-3">
+            <button id="btn-save-recipe-changes" class="flex-1 py-3 rounded-xl bg-[#E86A33] text-white font-bold text-sm shadow-md">Save Changes</button>
+            <button id="btn-delete-recipe" class="px-4 py-3 rounded-xl bg-rose-50 text-rose-600 font-bold text-xs hover:bg-rose-100">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- 5. MODAL: CREATE NEW RECIPE                               -->
+  <!-- ========================================================= -->
+  <div id="modal-create-recipe" class="hidden fixed inset-0 z-50 bg-[#F2F2F7] overflow-y-auto">
+    <div class="max-w-xl mx-auto min-h-screen bg-white pb-20 shadow-xl flex flex-col justify-between">
+      <div>
+        <div class="sticky top-0 z-30 bg-white/95 backdrop-blur-md px-4 py-3 border-b border-black/[0.06] flex items-center justify-between">
+          <h2 class="text-base font-bold text-[#1C1C1E]">Add Heirloom Recipe</h2>
+          <button id="btn-close-create-modal" class="text-sm font-semibold text-[#8E8E93]">Cancel</button>
+        </div>
+        <div class="p-5 space-y-4">
+          <div>
+            <label class="block text-xs font-bold text-[#636366] uppercase mb-1">Recipe Title</label>
+            <input type="text" id="create-title" placeholder="e.g. Umaya's Golden Mysore Pak" class="w-full bg-[#F2F2F7] focus:bg-white text-base font-bold p-3 rounded-xl border border-transparent focus:border-[#E86A33] outline-none" />
+          </div>
+          
+          <!-- Explicit Difficulty HTML Dropdown -->
+          <div>
+            <label class="block text-xs font-bold text-[#636366] uppercase mb-1.5">Difficulty Level (Required)</label>
+            <div id="create-difficulty-selector" data-diff="Medium" class="grid grid-cols-3 gap-1.5 p-1 bg-[#F2F2F7] rounded-xl border border-black/[0.04]">
+              <button type="button" data-level="Easy" class="diff-btn py-2 text-xs font-medium rounded-lg transition-all text-center text-[#636366]">🌱 Easy</button>
+              <button type="button" data-level="Medium" class="diff-btn py-2 text-xs font-medium rounded-lg transition-all text-center text-[#636366]">⚖️ Medium</button>
+              <button type="button" data-level="Umaya Mode" class="diff-btn py-2 text-xs font-medium rounded-lg transition-all text-center text-[#636366]">👑 Umaya Mode</button>
+            </div>
+          </div>
+
+          <div>
+            <label class="block text-xs font-bold text-[#636366] uppercase mb-1 flex items-center justify-between">
+              <span>Categories & Sections (Multi-Select)</span>
+            </label>
+            <div id="create-category-pills-container" class="space-y-2.5 p-3 rounded-xl bg-[#F2F2F7] border border-black/[0.04]"></div>
+          </div>
+          <div class="grid grid-cols-3 gap-2">
+            <div><label class="block text-[11px] font-bold text-[#636366] uppercase mb-1">Prep</label><input type="text" id="create-prep" class="w-full bg-[#F2F2F7] p-2 rounded-xl text-xs outline-none" /></div>
+            <div><label class="block text-[11px] font-bold text-[#636366] uppercase mb-1">Cook / Brew</label><input type="text" id="create-cook" class="w-full bg-[#F2F2F7] p-2 rounded-xl text-xs outline-none" /></div>
+            <div><label class="block text-[11px] font-bold text-[#636366] uppercase mb-1">Servings</label><input type="text" id="create-servings" class="w-full bg-[#F2F2F7] p-2 rounded-xl text-xs outline-none" /></div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#636366] uppercase mb-1 flex items-center gap-1">
+              <i data-lucide="quote" class="w-3.5 h-3.5 text-[#E86A33]"></i><span>Umaya's Story</span>
+            </label>
+            <textarea id="create-umaya-story" rows="2" class="w-full bg-[#F2F2F7] focus:bg-white text-sm p-3 rounded-xl border border-transparent focus:border-[#E86A33] outline-none leading-relaxed"></textarea>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-xs font-bold text-[#636366] uppercase">Ingredients</label>
+              <button id="btn-add-create-ingredient" class="text-xs font-bold text-[#E86A33] hover:underline">+ Add Item</button>
+            </div>
+            <div id="create-ingredients-list" class="space-y-1.5"></div>
+          </div>
+          <div>
+            <div class="flex items-center justify-between mb-1.5">
+              <label class="text-xs font-bold text-[#636366] uppercase">Instructions</label>
+              <button id="btn-add-create-step" class="text-xs font-bold text-[#E86A33] hover:underline">+ Add Step</button>
+            </div>
+            <div id="create-steps-list" class="space-y-1.5"></div>
+          </div>
+          <div>
+            <label class="block text-xs font-bold text-[#636366] uppercase mb-1">Cook's Secret Note</label>
+            <textarea id="create-notes" rows="2" class="w-full bg-[#F2F2F7] p-2.5 rounded-xl text-xs outline-none"></textarea>
+          </div>
+          <div class="pt-3">
+            <button id="btn-save-new-recipe" class="w-full py-3.5 rounded-xl bg-[#E86A33] text-white font-bold text-sm shadow-md">Save to Archive</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- 6. MODAL: SETTINGS & COOK MODE                            -->
+  <!-- ========================================================= -->
+  <div id="modal-cook-mode" class="hidden fixed inset-0 z-50 bg-[#1C1C1E] text-white flex flex-col justify-between p-6">
+    <div class="flex items-center justify-between">
+      <button id="btn-close-cook-mode" class="px-3 py-1.5 rounded-full bg-white/10 text-white text-xs font-semibold hover:bg-white/20">✕ Exit Cook Mode</button>
+      <span id="cook-step-counter" class="text-xs font-bold text-[#E86A33] uppercase tracking-wider"></span>
+      <div class="w-8"></div>
+    </div>
+    <div class="max-w-md mx-auto my-auto text-center space-y-4">
+      <span id="cook-recipe-title" class="text-xs font-medium text-stone-400 block tracking-wide"></span>
+      <h2 id="cook-step-instruction" class="text-xl md:text-2xl font-bold leading-relaxed text-white"></h2>
+    </div>
+    <div class="max-w-md mx-auto w-full flex items-center justify-between gap-4">
+      <button id="btn-cook-prev" class="flex-1 py-3 rounded-xl bg-white/10 font-bold text-sm hover:bg-white/20 transition-all">Previous Step</button>
+      <button id="btn-cook-next" class="flex-1 py-3 rounded-xl bg-[#E86A33] font-bold text-sm shadow-lg hover:bg-[#d55924] transition-all">Next Step</button>
+    </div>
+  </div>
+
+  <div id="modal-settings" class="hidden fixed inset-0 z-50 modal-backdrop flex items-center justify-center p-4">
+    <div class="bg-white rounded-3xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-full bg-orange-100 text-[#E86A33] flex items-center justify-center">
+            <i data-lucide="hard-drive" class="w-4 h-4"></i>
+          </div>
+          <h3 class="text-base font-bold text-[#1C1C1E]">Storage Settings</h3>
+        </div>
+        <button id="btn-close-settings-modal" class="text-[#8E8E93] text-sm font-semibold">Close</button>
+      </div>
+      <div class="p-3 rounded-xl bg-[#F2F2F7] space-y-1.5 text-xs text-[#636366]">
+        <div class="flex items-center justify-between"><span class="font-medium">Total Recipes:</span><span id="settings-recipe-count" class="font-bold text-[#1C1C1E]"></span></div>
+        <div class="flex items-center justify-between"><span class="font-medium">Storage Mode:</span><span id="settings-sync-status" class="font-bold text-stone-600">Local Only</span></div>
+      </div>
+      <div class="space-y-2 pt-2">
+        <button id="btn-reset-starter-data" class="w-full py-2.5 rounded-xl bg-[#F2F2F7] hover:bg-[#E5E5EA] text-[#1C1C1E] border border-black/[0.06] text-xs font-bold transition-colors">Restore Default Starter Recipes</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ========================================================= -->
+  <!-- 7. ARCHITECTURE: JAVASCRIPT APP MODULE (Vanilla / Local)  -->
+  <!-- ========================================================= -->
+  <script type="module">
+    // -----------------------------------------------------------
+    // STRICT 6 MAIN CATEGORY TAXONOMY
+    // -----------------------------------------------------------
+    const CATEGORY_GROUPS = [
+      { id: 'Daily Meals', label: 'Daily Meals', icon: '🍽️', tags: [
+        { id: 'Breakfast', label: 'Breakfast', icon: '🍳' },
+        { id: 'Lunch', label: 'Lunch', icon: '🥪' },
+        { id: 'Dinner', label: 'Dinner', icon: '🍝' }
+      ]},
+      { id: 'Beverages', label: 'Beverages', icon: '☕', tags: [
+        { id: 'Coffee', label: 'Coffee', icon: '☕' },
+        { id: 'Tea', label: 'Tea', icon: '🍵' },
+        { id: 'Cocoa & Hot Chocolate', label: 'Cocoa', icon: '🍫' },
+        { id: 'Juices & Coolers', label: 'Juices & Coolers', icon: '🧃' },
+        { id: 'Milk & Yogurt', label: 'Milk & Yogurt', icon: '🥛' },
+        { id: 'Herbal & Kashayam', label: 'Herbal & Kashayam', icon: '🌿' }
+      ]},
+      { id: 'Bites and Treats', label: 'Bites and Treats', icon: '🍪', tags: [
+        { id: 'Snacks', label: 'Snacks', icon: '🥟' },
+        { id: 'Savouries', label: 'Savouries', icon: '🥨' },
+        { id: 'Sweets', label: 'Sweets', icon: '🍰' }
+      ]},
+      { id: 'The Pantry', label: 'The Pantry', icon: '🏺', tags: [
+        { id: 'Pickles', label: 'Pickles', icon: '🥒' },
+        { id: 'Spice Powders', label: 'Spice Powders', icon: '🌶️' }
+      ]},
+      { id: 'Occasions', label: 'Occasions', icon: '🎉', tags: [
+        { id: 'Karnataka', label: 'Karnataka', icon: '🐘', subtags: [
+          { id: 'Makara Sankranti', label: 'Makara Sankranti', icon: '🪁' },
+          { id: 'Ugadi', label: 'Ugadi', icon: '🌸' },
+          { id: 'Varamahalakshmi Vrata', label: 'Varamahalakshmi', icon: '🪷' },
+          { id: 'Gowri-Ganesha Habba', label: 'Gowri-Ganesha', icon: '🐘' },
+          { id: 'Dasara', label: 'Dasara', icon: '👑' }
+        ]},
+        { id: 'Tamil Nadu', label: 'Tamil Nadu', icon: '🛕', subtags: [
+          { id: 'Pongal', label: 'Pongal', icon: '🌾' },
+          { id: 'Sri Rama Navami', label: 'Sri Rama Navami', icon: '🏹' },
+          { id: 'Puthandu', label: 'Puthandu', icon: '🥭' },
+          { id: 'Aadi Perukku', label: 'Aadi Perukku', icon: '🌊' },
+          { id: 'Krishna Jayanthi', label: 'Krishna Jayanthi', icon: '👣' },
+          { id: 'Vinayagar Chaturthi', label: 'Vinayagar Chaturthi', icon: '🥥' },
+          { id: 'Deepavali', label: 'Deepavali', icon: '🪔' },
+          { id: 'Karthigai Deepam', label: 'Karthigai Deepam', icon: '🔥' }
+        ]},
+        { id: 'Keralam', label: 'Keralam', icon: '🌴', subtags: [
+          { id: 'Thiruvathira', label: 'Thiruvathira', icon: '💃' },
+          { id: 'Vishu', label: 'Vishu', icon: '🪙' },
+          { id: 'Ashtami Rohini', label: 'Ashtami Rohini', icon: '🦚' },
+          { id: 'Onam', label: 'Onam', icon: '🌺' },
+          { id: 'Navaratri & Vidyarambham', label: 'Navaratri', icon: '📚' },
+          { id: 'Christmas & Easter', label: 'Christmas/Easter', icon: '⛪' },
+          { id: 'Ramzan / Eid', label: 'Ramzan/Eid', icon: '🌙' }
+        ]}
+      ]},
+      { id: 'The Vault', label: 'The Vault', icon: '🔒', tags: [
+        { id: 'Family Secrets', label: 'Family Secrets', icon: '🤫' }
+      ]}
+    ];
+
+    const MAIN_NAV_TABS = [
+      { id: 'All', label: 'All', icon: '🌟', subtabs: [] }, 
+      ...CATEGORY_GROUPS.map(grp => ({ 
+        id: grp.id, label: grp.label, icon: grp.icon, 
+        subtabs: [{ id: 'All', label: 'All ' + grp.label, icon: '🌟' }, ...grp.tags] 
+      }))
+    ];
+
+    // -----------------------------------------------------------
+    // STARTER HEIRLOOM RECIPES (Pre-seeded database)
+    // -----------------------------------------------------------
+    const STARTER_RECIPES = [
+      {
+        id: 'heirloom-1',
+        title: "Traditional Mysuru Bisi Bele Bath",
+        categories: ['Daily Meals', 'Lunch', 'Dinner', 'Occasions', 'Karnataka', 'Dasara'],
+        difficulty: 'Umaya Mode',
+        prepTime: '20 mins', cookTime: '45 mins', servings: '4-6 people',
+        umayaStory: "The secret to this traditional Dasara feast staple is soaking the tamarind properly and using freshly roasted kapok buds (marathi moggu) in the spice blend.",
+        isFavorite: true,
+        ingredients: [
+          { id: 'ing-1', amount: '1', unit: 'cup', name: 'Sona Masoori Rice' },
+          { id: 'ing-2', amount: '3/4', unit: 'cup', name: 'Toor Dal (Pigeon Peas)' },
+          { id: 'ing-3', amount: '1', unit: 'cup', name: 'Mixed Vegetables (Carrots, Beans, Peas, Knol Khol)' },
+          { id: 'ing-4', amount: '3', unit: 'tbsp', name: 'Bisi Bele Bath Powder (Freshly ground)' },
+          { id: 'ing-5', amount: '1', unit: 'lemon-sized', name: 'Tamarind (soaked in warm water)' },
+          { id: 'ing-6', amount: '1', unit: 'tbsp', name: 'Dark Jaggery' },
+          { id: 'ing-7', amount: '3', unit: 'tbsp', name: 'Pure Desi Ghee' },
+          { id: 'ing-8', amount: '2', unit: 'tbsp', name: 'Cashews & Peanuts (roasted)' }
+        ],
+        steps: [
+          { id: 'step-1', instruction: 'Pressure cook the rice and toor dal together with 4 cups of water and a pinch of turmeric until mushy.' },
+          { id: 'step-2', instruction: 'In a separate heavy-bottomed pot, boil the chopped vegetables with salt until tender but holding their shape.' },
+          { id: 'step-3', instruction: 'Extract the tamarind juice and add it to the boiled vegetables along with jaggery and Bisi Bele Bath powder. Simmer for 5 minutes until the raw smell disappears.' },
+          { id: 'step-4', instruction: 'Add the mashed rice and dal mixture to the pot. Stir continuously, adding hot water if it gets too thick. Simmer on low.' },
+          { id: 'step-5', instruction: 'Heat ghee in a pan, temper with mustard seeds, curry leaves, cashews, and peanuts. Pour sizzling over the bath.' }
+        ],
+        notes: 'Serve piping hot with a dollop of ghee and crispy potato chips or boondi.',
+        createdAt: Date.now() - 86400000 * 10, updatedAt: Date.now()
+      },
+      {
+        id: 'heirloom-2',
+        title: "Temple-Style Sakkarai Pongal",
+        categories: ['Bites and Treats', 'Sweets', 'Occasions', 'Tamil Nadu', 'Pongal'],
+        difficulty: 'Medium',
+        prepTime: '10 mins', cookTime: '30 mins', servings: '4 people',
+        umayaStory: "Made in a heavy bronze uruli. A pinch of edible camphor (pachai karpooram) is what gives this dish its unmistakable temple-prasad aroma.",
+        isFavorite: true,
+        ingredients: [
+          { id: 'ing-s1', amount: '1/2', unit: 'cup', name: 'Raw Rice (Pacharisi)' },
+          { id: 'ing-s2', amount: '2', unit: 'tbsp', name: 'Yellow Moong Dal' },
+          { id: 'ing-s3', amount: '1', unit: 'cup', name: 'Dark Jaggery (crushed)' },
+          { id: 'ing-s4', amount: '4', unit: 'tbsp', name: 'Ghee' },
+          { id: 'ing-s5', amount: '1/2', unit: 'tsp', name: 'Cardamom Powder' },
+          { id: 'ing-s6', amount: '1', unit: 'pinch', name: 'Edible Camphor (Pachai Karpooram)' },
+          { id: 'ing-s7', amount: '10', unit: 'whole', name: 'Cashews & Raisins' }
+        ],
+        steps: [
+          { id: 'step-s1', instruction: 'Dry roast the moong dal until golden. Wash rice and dal, then pressure cook with 2.5 cups water until extremely soft.' },
+          { id: 'step-s2', instruction: 'Melt jaggery with 1/4 cup water in a pan. Strain to remove impurities, then boil until slightly thickened.' },
+          { id: 'step-s3', instruction: 'Mash the cooked rice and dal thoroughly. Pour the jaggery syrup over it and simmer on low heat to combine.' },
+          { id: 'step-s4', instruction: 'Stir in 2 tbsp of ghee, cardamom powder, and the crushed edible camphor.' },
+          { id: 'step-s5', instruction: 'Fry cashews and raisins in the remaining ghee until golden. Pour over the Pongal and mix.' }
+        ],
+        notes: 'Do not skip the edible camphor—it is the soul of authentic Sakkarai Pongal.',
+        createdAt: Date.now() - 86400000 * 5, updatedAt: Date.now()
+      },
+      {
+        id: 'heirloom-3',
+        title: "Authentic Pink Palada Pradhaman",
+        categories: ['Bites and Treats', 'Sweets', 'Occasions', 'Keralam', 'Onam'],
+        difficulty: 'Umaya Mode',
+        prepTime: '15 mins', cookTime: '2 hrs', servings: '6 cups',
+        umayaStory: "The hallmark of a true Sadya. The milk must be slow-reduced over hours until the natural sugars caramelize, giving the pudding a signature pale pink hue.",
+        isFavorite: false,
+        ingredients: [
+          { id: 'ing-p1', amount: '1/2', unit: 'cup', name: 'Rice Ada (flakes)' },
+          { id: 'ing-p2', amount: '1.5', unit: 'liters', name: 'Full-fat Milk' },
+          { id: 'ing-p3', amount: '3/4', unit: 'cup', name: 'Sugar' },
+          { id: 'ing-p4', amount: '1', unit: 'tbsp', name: 'Ghee' },
+          { id: 'ing-p5', amount: '2', unit: 'cups', name: 'Boiling Water' }
+        ],
+        steps: [
+          { id: 'step-p1', instruction: 'Wash the rice ada and soak in boiling water for 15 minutes. Drain and rinse with cold water to stop cooking.' },
+          { id: 'step-p2', instruction: 'In a wide, heavy-bottomed brass pan (uruli), boil the milk. Once it boils, lower the flame completely.' },
+          { id: 'step-p3', instruction: 'Add the softened ada to the milk. Stir continuously on low heat for 1 hour to prevent scorching.' },
+          { id: 'step-p4', instruction: 'When the milk reduces by half, add the sugar. Continue to simmer and stir for another 30-45 minutes.' },
+          { id: 'step-p5', instruction: 'The pradhaman is ready when it thickens beautifully and turns a natural pale pink color. Turn off heat.' }
+        ],
+        notes: 'No cardamom or nuts are used in traditional Palada Pradhaman to let the caramelized milk flavor shine.',
+        createdAt: Date.now() - 86400000 * 3, updatedAt: Date.now()
+      },
+      {
+        id: 'heirloom-4',
+        title: "Spiced Neer Mor (Buttermilk Cooler)",
+        categories: ['Beverages', 'Milk & Yogurt', 'Occasions', 'Tamil Nadu', 'Sri Rama Navami'],
+        difficulty: 'Easy',
+        prepTime: '10 mins', cookTime: '2 mins', servings: '4 glasses',
+        umayaStory: "Offered to devotees in clay pots during the blazing summer heat of Sri Rama Navami. It cools the stomach instantly.",
+        isFavorite: false,
+        ingredients: [
+          { id: 'ing-n1', amount: '1', unit: 'cup', name: 'Thick Curd (Yogurt)' },
+          { id: 'ing-n2', amount: '3', unit: 'cups', name: 'Chilled Water' },
+          { id: 'ing-n3', amount: '1', unit: 'inch', name: 'Ginger (finely crushed)' },
+          { id: 'ing-n4', amount: '1', unit: 'tsp', name: 'Mustard Seeds' },
+          { id: 'ing-n5', amount: '1', unit: 'sprig', name: 'Curry Leaves' },
+          { id: 'ing-n6', amount: '1', unit: 'tbsp', name: 'Coriander Leaves (chopped)' },
+          { id: 'ing-n7', amount: '1', unit: 'pinch', name: 'Asafoetida (Hing)' }
+        ],
+        steps: [
+          { id: 'step-n1', instruction: 'Whisk the curd with chilled water until smooth and frothy.' },
+          { id: 'step-n2', instruction: 'Stir in the crushed ginger, chopped coriander, and salt to taste.' },
+          { id: 'step-n3', instruction: 'Heat a tiny bit of oil in a small pan. Splutter the mustard seeds.' },
+          { id: 'step-n4', instruction: 'Add curry leaves and asafoetida. Take off the heat instantly.' },
+          { id: 'step-n5', instruction: 'Pour the tempering into the buttermilk and mix well. Serve chilled.' }
+        ],
+        notes: 'For best results, let the ginger steep in the buttermilk for 30 minutes before serving.',
+        createdAt: Date.now() - 86400000 * 2, updatedAt: Date.now()
+      },
+      {
+        id: 'heirloom-5',
+        title: "Crispy Bakery Nippattu",
+        categories: ['Bites and Treats', 'Savouries', 'Occasions', 'Karnataka', 'Makara Sankranti'],
+        difficulty: 'Medium',
+        prepTime: '20 mins', cookTime: '30 mins', servings: '15 discs',
+        umayaStory: "These crispy, deep-fried rice flour discs are a Karnataka tea-time staple. Adding smoking hot oil to the dry flour is the secret to their flaky crunch.",
+        isFavorite: true,
+        ingredients: [
+          { id: 'ing-r1', amount: '1', unit: 'cup', name: 'Rice Flour' },
+          { id: 'ing-r2', amount: '2', unit: 'tbsp', name: 'Maida (All-purpose flour)' },
+          { id: 'ing-r3', amount: '2', unit: 'tbsp', name: 'Chiroti Rava (Fine Semolina)' },
+          { id: 'ing-r4', amount: '1/4', unit: 'cup', name: 'Roasted Peanuts (coarsely crushed)' },
+          { id: 'ing-r5', amount: '2', unit: 'tbsp', name: 'Roasted Gram / Putani (powdered)' },
+          { id: 'ing-r6', amount: '1', unit: 'tsp', name: 'Red Chili Powder' },
+          { id: 'ing-r7', amount: '2', unit: 'tbsp', name: 'Smoking Hot Cooking Oil' }
+        ],
+        steps: [
+          { id: 'step-r1', instruction: 'In a large bowl, mix rice flour, maida, rava, crushed peanuts, roasted gram powder, chili powder, salt, and finely chopped curry leaves.' },
+          { id: 'step-r2', instruction: 'Pour the smoking hot oil over the dry flour mixture (it should sizzle). Mix well with a spoon, then rub with fingers until crumbly.' },
+          { id: 'step-r3', instruction: 'Add water gradually to knead into a smooth, tight dough.' },
+          { id: 'step-r4', instruction: 'Pinch small lemon-sized balls. Flatten them into thin discs on a greased plastic sheet or parchment paper.' },
+          { id: 'step-r5', instruction: 'Deep fry the discs in hot oil on medium flame until golden brown and crispy on both sides.' }
+        ],
+        notes: 'Store in an airtight container once completely cool to maintain the crunch for weeks.',
+        createdAt: Date.now() - 86400000 * 1, updatedAt: Date.now()
+      }
+    ];
+
+    // -----------------------------------------------------------
+    // STATE MANAGEMENT (LOCAL ONLY)
+    // -----------------------------------------------------------
+    const LOCAL_STORAGE_KEY = 'umayas_recipes_v1_local';
+    
+    let appState = {
+      recipes: [],
+      activeTab: 'recipes', 
+      selectedCategory: 'All',
+      selectedSubCategory: 'All',
+      selectedThirdCategory: 'All',
+      searchQuery: '',
+      currentRecipe: null,
+      currentScale: 1,
+      cookModeStepIndex: 0
+    };
+
+    function normalizeDifficulty(diff) {
+      if (!diff) return 'Medium';
+      const d = diff.trim().toLowerCase();
+      if (d === 'easy') return 'Easy';
+      if (d === 'umaya mode' || d === 'hard') return 'Umaya Mode';
+      return 'Medium';
+    }
+
+    function normalizeCategories(recipe) {
+      const cats = new Set();
+      if (Array.isArray(recipe.categories)) recipe.categories.forEach(c => c && cats.add(c.trim()));
+      
+      const allowed = new Set(
+        CATEGORY_GROUPS.map(g => g.id)
+        .concat(CATEGORY_GROUPS.flatMap(g => g.tags.map(t => t.id)))
+        .concat(CATEGORY_GROUPS.flatMap(g => g.tags.flatMap(t => t.subtags ? t.subtags.map(st => st.id) : [])))
+      );
+      return Array.from(cats).filter(c => allowed.has(c));
+    }
+
+    function getDifficultyBadgeHtml(diff) {
+      const level = normalizeDifficulty(diff);
+      if (level === 'Easy') return `<span class="badge-diff-easy px-2 py-0.5 rounded-full text-[10px] flex items-center gap-1">🌱 Easy</span>`;
+      if (level === 'Medium') return `<span class="badge-diff-medium px-2 py-0.5 rounded-full text-[10px] flex items-center gap-1">⚖️ Medium</span>`;
+      return `<span class="badge-diff-umaya px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1">👑 Umaya Mode</span>`;
+    }
+
+    function parseAmount(str) {
+      if(!str) return 0;
+      let s = str.toString().trim();
+      if (s.includes('-')) return s; // Ignore ranges like "3-4"
+      if(s.includes('/')) {
+        let parts = s.split(' ');
+        if(parts.length > 1) return parseFloat(parts[0]) + (parseFloat(parts[1].split('/')[0]) / parseFloat(parts[1].split('/')[1]));
+        return parseFloat(parts[0].split('/')[0]) / parseFloat(parts[0].split('/')[1]);
+      }
+      let val = parseFloat(s);
+      return isNaN(val) ? s : val;
+    }
+    
+    function formatAmount(num) {
+      if (typeof num === 'string') return num;
+      if (num === 0) return "";
+      let w = Math.floor(num), f = num - w, fs = "";
+      if(Math.abs(f - 0.25) < 0.05) fs = "1/4";
+      else if(Math.abs(f - 0.33) < 0.05) fs = "1/3";
+      else if(Math.abs(f - 0.5) < 0.05) fs = "1/2";
+      else if(Math.abs(f - 0.66) < 0.05) fs = "2/3";
+      else if(Math.abs(f - 0.75) < 0.05) fs = "3/4";
+      else if(f > 0.05) fs = f.toFixed(1).replace(/^0+/, '');
+      return (w > 0 ? w + (fs ? " " + fs : "") : fs).trim();
+    }
+
+    function renderDetailIngredients() {
+      const r = appState.currentRecipe;
+      let scaleText = appState.currentScale === 1 ? r.servings : `${appState.currentScale}x Yield`;
+      document.getElementById('detail-view-servings-container').innerHTML = `
+        <div class="flex items-center gap-1.5 bg-white rounded-lg border border-black/[0.08] px-1 py-0.5 shadow-2xs mx-auto w-max mt-0.5">
+          <button id="btn-scale-down" class="w-5 h-5 flex items-center justify-center text-rose-500 font-bold bg-rose-50 rounded hover:bg-rose-100">-</button>
+          <span class="text-[10px] font-bold text-[#1C1C1E] min-w-[3rem] text-center">${scaleText}</span>
+          <button id="btn-scale-up" class="w-5 h-5 flex items-center justify-center text-emerald-600 font-bold bg-emerald-50 rounded hover:bg-emerald-100">+</button>
+        </div>
+      `;
+      
+      document.getElementById('detail-view-ingredients').innerHTML = r.ingredients.map(i => {
+        let parsed = parseAmount(i.amount);
+        let scaledAmt = typeof parsed === 'number' ? formatAmount(parsed * appState.currentScale) : i.amount;
+        return `
+          <div class="chk-item flex items-start gap-3 py-2 border-b border-black/[0.04] last:border-0 cursor-pointer transition-all">
+            <input type="checkbox" class="mt-1 w-4 h-4 rounded border-gray-300 text-[#E86A33] pointer-events-none" />
+            <p class="text-sm text-[#1C1C1E] chk-text transition-all"><span class="font-bold text-[#E86A33] chk-highlight">${scaledAmt} ${i.unit}</span> - ${i.name}</p>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // -----------------------------------------------------------
+    // DATA LAYER (Strictly LocalStorage)
+    // -----------------------------------------------------------
+    function fetchRecipes() {
+      try {
+        const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
+        if (raw) {
+          appState.recipes = JSON.parse(raw);
+        } else {
+          appState.recipes = STARTER_RECIPES;
+          persistRecipes();
+        }
+      } catch (e) {
+        console.error("Local storage error:", e);
+        appState.recipes = STARTER_RECIPES;
+      }
+      
+      appState.recipes = appState.recipes.map(r => ({ 
+        ...r, 
+        difficulty: normalizeDifficulty(r.difficulty), 
+        categories: normalizeCategories(r) 
+      }));
+      renderRecipeList();
+    }
+
+    function persistRecipes() {
+      try {
+        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(appState.recipes));
+      } catch (e) {
+        console.error("Could not save to local storage", e);
+      }
+    }
+
+    function saveRecipe(recipeObj) {
+      recipeObj.updatedAt = Date.now();
+      recipeObj.difficulty = normalizeDifficulty(recipeObj.difficulty);
+      recipeObj.categories = normalizeCategories(recipeObj);
+      
+      const idx = appState.recipes.findIndex(r => r.id === recipeObj.id);
+      if (idx > -1) {
+        appState.recipes[idx] = recipeObj;
+      } else {
+        appState.recipes.unshift(recipeObj);
+      }
+      
+      persistRecipes();
+      renderRecipeList();
+    }
+
+    function deleteRecipe(id) {
+      appState.recipes = appState.recipes.filter(r => r.id !== id);
+      persistRecipes();
+      renderRecipeList();
+    }
+
+    // -----------------------------------------------------------
+    // RENDER LOGIC
+    // -----------------------------------------------------------
+    function renderCategoryNav() {
+      const container = document.getElementById('main-category-bar');
+      container.innerHTML = MAIN_NAV_TABS.map(sec => `
+        <button class="category-btn min-h-[36px] px-3.5 py-1.5 rounded-full text-xs transition-all shrink-0 flex items-center gap-1.5 ${appState.selectedCategory === sec.id ? 'bg-[#E86A33] text-white font-bold shadow-xs' : 'bg-white text-[#636366] font-medium hover:bg-[#E5E5EA]/50 border border-black/[0.04]'}" data-id="${sec.id}">
+          <span>${sec.icon}</span><span>${sec.label}</span>
+        </button>
+      `).join('');
+    }
+
+    function renderSubMenu() {
+      const sec = MAIN_NAV_TABS.find(s => s.id === appState.selectedCategory);
+      const container = document.getElementById('sub-menu-container');
+      const grid = document.getElementById('sub-menu-grid');
+      
+      if (!sec || !sec.subtabs || sec.subtabs.length === 0) {
+        container.classList.add('hidden');
+        const ttContainer = document.getElementById('third-tier-container');
+        if(ttContainer) ttContainer.classList.add('hidden');
+        return;
+      }
+
+      container.classList.remove('hidden');
+      document.getElementById('sub-menu-title').innerHTML = `<span>${sec.icon}</span><span>${sec.label} Sub-menu</span>`;
+      grid.className = 'grid grid-cols-2 sm:grid-cols-4 gap-1.5';
+      
+      grid.innerHTML = sec.subtabs.map(sub => `
+        <button class="subcat-btn py-2 px-2.5 rounded-lg text-xs transition-all text-center flex items-center justify-center gap-1.5 ${appState.selectedSubCategory === sub.id ? 'bg-[#FFF2EB] text-[#E86A33] font-bold border border-[#E86A33]/40 shadow-2xs' : 'bg-[#F2F2F7] text-[#636366] font-medium hover:bg-[#E5E5EA] border border-transparent'}" data-id="${sub.id}">
+          <span>${sub.icon}</span><span>${sub.label}</span>
+        </button>
+      `).join('');
+
+      let thirdTierContainer = document.getElementById('third-tier-container');
+      if (!thirdTierContainer) {
+        thirdTierContainer = document.createElement('div');
+        thirdTierContainer.id = 'third-tier-container';
+        thirdTierContainer.className = 'mt-2 pt-2 border-t border-black/[0.04] flex flex-wrap gap-1.5';
+        container.appendChild(thirdTierContainer);
+      }
+
+      const activeSubtab = sec.subtabs.find(s => s.id === appState.selectedSubCategory);
+      if (activeSubtab && activeSubtab.subtags && activeSubtab.subtags.length > 0) {
+        thirdTierContainer.classList.remove('hidden');
+        thirdTierContainer.innerHTML = [
+          { id: 'All', label: 'All', icon: '🌟' },
+          ...activeSubtab.subtags
+        ].map(tt => `
+          <button class="thirdcat-btn px-2.5 py-1 rounded-full text-[10px] font-bold transition-all flex items-center gap-1 ${appState.selectedThirdCategory === tt.id ? 'bg-[#E86A33] text-white shadow-xs' : 'bg-[#F2F2F7] text-[#636366] hover:bg-[#E5E5EA]'}" data-id="${tt.id}">
+            <span>${tt.icon}</span><span>${tt.label}</span>
+          </button>
+        `).join('');
+      } else {
+        thirdTierContainer.classList.add('hidden');
+      }
+    }
+
+    function renderRecipeList() {
+      const listEl = document.getElementById('recipe-list');
+      const emptyEl = document.getElementById('empty-state');
+      document.getElementById('header-recipe-count').textContent = `${appState.recipes.length} local recipes`;
+      
+      const favCount = appState.recipes.filter(r => r.isFavorite).length;
+      const favBadge = document.getElementById('fav-badge');
+      favBadge.textContent = favCount;
+      favBadge.classList.toggle('hidden', favCount === 0);
+
+      const filtered = appState.recipes.filter(r => {
+        if (appState.activeTab === 'favorites' && !r.isFavorite) return false;
+        const cats = r.categories.map(c => c.toLowerCase());
+        const diff = r.difficulty.toLowerCase();
+        
+        if (appState.selectedCategory !== 'All') {
+          const tp = appState.selectedCategory.toLowerCase();
+          const ts = appState.selectedSubCategory.toLowerCase();
+          const tt = appState.selectedThirdCategory ? appState.selectedThirdCategory.toLowerCase() : 'all';
+          const belongs = cats.includes(tp) || CATEGORY_GROUPS.find(g => g.id.toLowerCase() === tp)?.tags.some(t => cats.includes(t.id.toLowerCase()));
+          if (!belongs) return false;
+          if (ts !== 'all') {
+            if (!cats.includes(ts)) return false;
+            if (tt !== 'all' && !cats.includes(tt)) return false;
+          }
+        }
+
+        if (appState.searchQuery.trim()) {
+          const q = appState.searchQuery.toLowerCase();
+          return (r.title||'').toLowerCase().includes(q) || (r.umayaStory||'').toLowerCase().includes(q) || cats.some(c=>c.includes(q)) || diff.includes(q) || (r.ingredients||[]).some(i=>(i.name||'').toLowerCase().includes(q));
+        }
+        return true;
+      });
+
+      if (filtered.length === 0) {
+        listEl.innerHTML = '';
+        emptyEl.classList.remove('hidden');
+        return;
+      }
+
+      emptyEl.classList.add('hidden');
+      listEl.innerHTML = filtered.map(r => `
+        <div class="recipe-card bg-white rounded-2xl p-4 border border-black/[0.06] hover:border-[#E86A33]/30 transition-all card-shadow cursor-pointer" data-id="${r.id}">
+          <div class="flex items-start justify-between gap-3 mb-2">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              ${r.categories.slice(0, 2).map(c => `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100/90 text-orange-900 border border-orange-200/60">${c}</span>`).join('')}
+              ${getDifficultyBadgeHtml(r.difficulty)}
+            </div>
+            <button class="btn-toggle-fav p-1.5 -mr-1 rounded-full hover:bg-rose-50 text-[#8E8E93]" data-id="${r.id}">
+              <i data-lucide="heart" class="w-4 h-4 ${r.isFavorite ? 'fill-rose-500 text-rose-500' : ''}"></i>
+            </button>
+          </div>
+          <h3 class="text-base font-bold text-[#1C1C1E] mb-1.5 leading-snug">${r.title}</h3>
+          ${r.umayaStory ? `
+            <div class="mb-3 p-2.5 rounded-xl bg-[#FFF8F3] border border-orange-100 flex items-start gap-2">
+              <i data-lucide="quote" class="w-3.5 h-3.5 text-[#E86A33] shrink-0 mt-0.5"></i>
+              <p class="text-xs text-[#636366] italic line-clamp-2 leading-relaxed">"${r.umayaStory}"</p>
+            </div>
+          ` : ''}
+          <div class="flex items-center gap-4 text-xs text-[#636366] font-medium pt-2 border-t border-black/[0.04]">
+            <div class="flex items-center gap-1"><i data-lucide="clock" class="w-3.5 h-3.5 text-[#8E8E93]"></i><span>${r.prepTime || '-'}</span></div>
+            <div class="flex items-center gap-1"><i data-lucide="flame" class="w-3.5 h-3.5 text-[#E86A33]"></i><span>${r.cookTime || '-'}</span></div>
+            <div class="flex items-center gap-1 ml-auto"><i data-lucide="users" class="w-3.5 h-3.5 text-[#8E8E93]"></i><span>${r.servings || '-'}</span></div>
+          </div>
+        </div>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    // -----------------------------------------------------------
+    // DETAIL & EDIT MODALS
+    // -----------------------------------------------------------
+    function openDetail(recipe) {
+      appState.currentRecipe = recipe;
+      appState.currentScale = 1;
+      document.getElementById('detail-view-title').textContent = recipe.title;
+      
+      const catsEl = document.getElementById('detail-view-categories');
+      catsEl.innerHTML = [
+        ...recipe.categories.map(c => `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-orange-100/90 text-orange-900 border border-orange-200/60">${c}</span>`),
+        getDifficultyBadgeHtml(recipe.difficulty)
+      ].join('');
+      
+      const storyBox = document.getElementById('detail-view-story-box');
+      if (recipe.umayaStory) { storyBox.classList.remove('hidden'); document.getElementById('detail-view-story-text').textContent = recipe.umayaStory; }
+      else { storyBox.classList.add('hidden'); }
+      
+      document.getElementById('detail-view-prep').textContent = recipe.prepTime || '-';
+      document.getElementById('detail-view-cook').textContent = recipe.cookTime || '-';
+      
+      renderDetailIngredients();
+      
+      document.getElementById('detail-view-steps').innerHTML = recipe.steps.map((s, idx) => `
+        <div class="chk-item flex items-start gap-3 py-2 cursor-pointer transition-all">
+          <input type="checkbox" class="mt-0.5 w-4 h-4 rounded border-gray-300 text-[#E86A33] pointer-events-none shrink-0" />
+          <p class="text-sm text-[#1C1C1E] leading-relaxed chk-text transition-all">${idx+1}. ${s.instruction}</p>
+        </div>
+      `).join('');
+
+      const notesBox = document.getElementById('detail-view-notes-box');
+      if (recipe.notes) { notesBox.classList.remove('hidden'); document.getElementById('detail-view-notes-text').textContent = recipe.notes; }
+      else { notesBox.classList.add('hidden'); }
+      
+      const btnFav = document.getElementById('btn-detail-fav');
+      btnFav.innerHTML = `<i data-lucide="heart" class="w-5 h-5 ${recipe.isFavorite ? 'fill-rose-500 text-rose-500' : ''}"></i>`;
+      
+      document.getElementById('modal-recipe-detail').classList.remove('hidden');
+      document.getElementById('detail-view-container').classList.remove('hidden');
+      document.getElementById('detail-edit-container').classList.add('hidden');
+      lucide.createIcons();
+    }
+
+    // Dynamic Tag Rendering for Edit/Create Forms
+    function renderFormTags(containerId, activeCats = []) {
+      const container = document.getElementById(containerId);
+      const active = new Set(activeCats);
+      container.dataset.tags = JSON.stringify(Array.from(active));
+      
+      // We manually construct the string without backslashes before literal $
+      // by using simple string concatenation in standard JS inside a template string.
+      let htmlString = "";
+      for (const g of CATEGORY_GROUPS) {
+        htmlString += `
+        <div class="mb-3 last:mb-0">
+          <div class="flex flex-wrap gap-1.5">
+            <button type="button" data-tag="${g.id}" class="form-tag-btn px-2.5 py-1 rounded-full text-xs transition-all flex items-center gap-1 ${active.has(g.id) ? 'bg-[#E86A33] text-white font-semibold shadow-2xs' : 'bg-white text-[#636366] font-medium border border-black/[0.08] hover:bg-[#E5E5EA]'}">
+              <span>${g.icon}</span><span>Main: ${g.label}</span>
+            </button>
+        `;
+        
+        for (const t of g.tags) {
+          let btnStr = `<button type="button" data-tag="${t.id}" data-parent="${g.id}" class="form-tag-btn px-2.5 py-1 rounded-full text-xs transition-all flex items-center gap-1 ${active.has(t.id) ? 'bg-[#FFF2EB] text-[#E86A33] font-bold border border-[#E86A33]/50 shadow-2xs' : 'bg-white text-[#636366] font-medium border border-black/[0.08] hover:bg-[#E5E5EA]'}"><span>${t.icon}</span><span>${t.label}</span></button>`;
+          
+          if (active.has(t.id) && t.subtags) {
+            let subTagHtml = t.subtags.map(st => `<button type="button" data-tag="${st.id}" data-parent="${t.id}" class="form-tag-btn px-2.5 py-1 rounded-full text-[11px] font-bold transition-all flex items-center gap-1 ${active.has(st.id) ? 'bg-[#E86A33] text-white shadow-xs' : 'bg-white text-[#636366] border border-black/[0.08] hover:bg-[#E5E5EA]'}"><span>${st.icon}</span><span>${st.label}</span></button>`).join('');
+            btnStr += `<div class="w-full flex flex-wrap gap-1.5 mt-1 mb-1 pl-2 border-l-2 border-[#E86A33]/30">${subTagHtml}</div>`;
+          }
+          htmlString += btnStr;
+        }
+        htmlString += `</div></div>`;
+      }
+      container.innerHTML = htmlString;
+    }
+
+    function handleTagClick(e, containerId) {
+      const btn = e.target.closest('.form-tag-btn');
+      if (!btn) return;
+      const tag = btn.dataset.tag;
+      const parent = btn.dataset.parent;
+      const container = document.getElementById(containerId);
+      const active = new Set(JSON.parse(container.dataset.tags || '[]'));
+      
+      if (active.has(tag)) {
+        active.delete(tag);
+      } else {
+        active.add(tag);
+        if (parent) active.add(parent);
+      }
+      renderFormTags(containerId, Array.from(active));
+    }
+
+    function setFormDifficulty(containerId, level) {
+      const container = document.getElementById(containerId);
+      container.dataset.diff = level;
+      container.querySelectorAll('.diff-btn').forEach(btn => {
+        const bl = btn.dataset.level;
+        if (bl === level) {
+          if (bl === 'Easy') btn.className = 'diff-btn py-2 text-xs font-bold rounded-lg transition-all text-center bg-emerald-100 text-emerald-900 border border-emerald-300 shadow-2xs';
+          else if (bl === 'Medium') btn.className = 'diff-btn py-2 text-xs font-bold rounded-lg transition-all text-center bg-blue-100 text-blue-900 border border-blue-300 shadow-2xs';
+          else btn.className = 'diff-btn py-2 text-xs font-bold rounded-lg transition-all text-center bg-gradient-to-r from-amber-200 to-yellow-300 text-amber-950 border border-amber-500 shadow-xs';
+        } else {
+          btn.className = 'diff-btn py-2 text-xs font-medium rounded-lg transition-all text-center text-[#636366] hover:bg-white/60';
+        }
+      });
+    }
+
+    // Dynamic Lists (Ingredients & Steps)
+    function addIngredientRow(containerId, amt='', unit='', name='') {
+      const div = document.createElement('div');
+      div.className = 'ing-row flex items-center gap-2 bg-[#F2F2F7] p-2 rounded-xl border border-transparent focus-within:border-[#E86A33]';
+      div.innerHTML = `
+        <input type="text" placeholder="Amt" value="${amt}" class="ing-amt w-14 bg-transparent text-xs font-bold text-center outline-none" />
+        <input type="text" placeholder="Unit" value="${unit}" class="ing-unit w-16 bg-transparent text-xs text-center border-l border-black/[0.08] pl-2 outline-none" />
+        <input type="text" placeholder="Ingredient name" value="${name}" class="ing-name flex-1 bg-transparent text-sm pl-2 border-l border-black/[0.08] outline-none" />
+        <button type="button" class="btn-rem text-[#8E8E93] hover:text-rose-500 p-1"><i data-lucide="x" class="w-4 h-4"></i></button>
+      `;
+      document.getElementById(containerId).appendChild(div);
+      lucide.createIcons();
+    }
+
+    function addStepRow(containerId, txt='') {
+      const div = document.createElement('div');
+      div.className = 'step-row flex items-start gap-2 bg-[#F2F2F7] p-2 rounded-xl border border-transparent focus-within:border-[#E86A33]';
+      div.innerHTML = `
+        <textarea rows="2" placeholder="Instruction step..." class="step-txt flex-1 bg-transparent text-sm resize-none outline-none leading-relaxed">${txt}</textarea>
+        <button type="button" class="btn-rem text-[#8E8E93] hover:text-rose-500 p-1 mt-1"><i data-lucide="x" class="w-4 h-4"></i></button>
+      `;
+      document.getElementById(containerId).appendChild(div);
+      lucide.createIcons();
+    }
+
+    // -----------------------------------------------------------
+    // EVENT LISTENERS & LIFECYCLE
+    // -----------------------------------------------------------
+    document.addEventListener('DOMContentLoaded', () => {
+      lucide.createIcons();
+      fetchRecipes();
+      renderCategoryNav();
+      
+      // Search
+      const sInput = document.getElementById('search-input');
+      const sClear = document.getElementById('btn-clear-search');
+      sInput.addEventListener('input', (e) => {
+        appState.searchQuery = e.target.value;
+        sClear.classList.toggle('hidden', !appState.searchQuery);
+        renderRecipeList();
+      });
+      sClear.addEventListener('click', () => { sInput.value = ''; appState.searchQuery = ''; sClear.classList.add('hidden'); renderRecipeList(); });
+
+      // Tab Navigation
+      document.getElementById('tab-recipes').addEventListener('click', () => {
+        appState.activeTab = 'recipes';
+        document.getElementById('favorites-header').classList.add('hidden');
+        document.getElementById('tab-recipes').classList.replace('text-[#8E8E93]', 'text-[#E86A33]');
+        document.getElementById('tab-favorites').classList.replace('text-[#E86A33]', 'text-[#8E8E93]');
+        renderRecipeList();
+      });
+      document.getElementById('tab-favorites').addEventListener('click', () => {
+        appState.activeTab = 'favorites';
+        document.getElementById('favorites-header').classList.remove('hidden');
+        document.getElementById('tab-favorites').classList.replace('text-[#8E8E93]', 'text-[#E86A33]');
+        document.getElementById('tab-recipes').classList.replace('text-[#E86A33]', 'text-[#8E8E93]');
+        renderRecipeList();
+      });
+      document.getElementById('tab-add').addEventListener('click', () => {
+        document.getElementById('create-title').value = '';
+        document.getElementById('create-prep').value = '';
+        document.getElementById('create-cook').value = '';
+        document.getElementById('create-servings').value = '';
+        document.getElementById('create-umaya-story').value = '';
+        document.getElementById('create-notes').value = '';
+        document.getElementById('create-ingredients-list').innerHTML = '';
+        document.getElementById('create-steps-list').innerHTML = '';
+        setFormDifficulty('create-difficulty-selector', 'Medium');
+        renderFormTags('create-category-pills-container', []);
+        addIngredientRow('create-ingredients-list');
+        addStepRow('create-steps-list');
+        document.getElementById('modal-create-recipe').classList.remove('hidden');
+      });
+      document.getElementById('btn-close-create-modal').addEventListener('click', () => document.getElementById('modal-create-recipe').classList.add('hidden'));
+
+      // Category Delegation
+      document.getElementById('main-category-bar').addEventListener('click', e => {
+        const btn = e.target.closest('.category-btn');
+        if (btn) {
+          appState.selectedCategory = btn.dataset.id;
+          appState.selectedSubCategory = 'All';
+          appState.selectedThirdCategory = 'All';
+          renderCategoryNav(); renderSubMenu(); renderRecipeList();
+        }
+      });
+      document.getElementById('sub-menu-container').addEventListener('click', e => {
+        const subBtn = e.target.closest('.subcat-btn');
+        if (subBtn) {
+          appState.selectedSubCategory = subBtn.dataset.id;
+          appState.selectedThirdCategory = 'All';
+          renderSubMenu(); renderRecipeList();
+          return;
+        }
+        const thirdBtn = e.target.closest('.thirdcat-btn');
+        if (thirdBtn) {
+          appState.selectedThirdCategory = thirdBtn.dataset.id;
+          renderSubMenu(); renderRecipeList();
+        }
+      });
+
+      // Settings
+      document.getElementById('btn-open-settings').addEventListener('click', () => {
+        document.getElementById('settings-recipe-count').textContent = appState.recipes.length;
+        document.getElementById('modal-settings').classList.remove('hidden');
+      });
+      document.getElementById('btn-close-settings-modal').addEventListener('click', () => document.getElementById('modal-settings').classList.add('hidden'));
+
+      // Recipe Actions (Fav / Open)
+      document.getElementById('recipe-list').addEventListener('click', e => {
+        const favBtn = e.target.closest('.btn-toggle-fav');
+        if (favBtn) {
+          e.stopPropagation();
+          const r = appState.recipes.find(rx => rx.id === favBtn.dataset.id);
+          if (r) saveRecipe({ ...r, isFavorite: !r.isFavorite });
+          return;
+        }
+        const card = e.target.closest('.recipe-card');
+        if (card) {
+          const r = appState.recipes.find(rx => rx.id === card.dataset.id);
+          if (r) openDetail(r);
+        }
+      });
+
+      // Modal Actions
+      document.getElementById('btn-detail-back').addEventListener('click', () => document.getElementById('modal-recipe-detail').classList.add('hidden'));
+      document.getElementById('btn-detail-fav').addEventListener('click', () => {
+        const r = { ...appState.currentRecipe, isFavorite: !appState.currentRecipe.isFavorite };
+        saveRecipe(r);
+        openDetail(r);
+      });
+      
+      // Cook Mode
+      document.getElementById('btn-detail-cook').addEventListener('click', () => {
+        if (!appState.currentRecipe.steps || appState.currentRecipe.steps.length === 0) {
+          alert("No instructions added yet.");
+          return;
+        }
+        appState.cookModeStepIndex = 0;
+        const upd = () => {
+          document.getElementById('cook-recipe-title').textContent = appState.currentRecipe.title;
+          document.getElementById('cook-step-counter').textContent = `Step ${appState.cookModeStepIndex + 1} of ${appState.currentRecipe.steps.length}`;
+          document.getElementById('cook-step-instruction').textContent = appState.currentRecipe.steps[appState.cookModeStepIndex].instruction;
+          document.getElementById('btn-cook-prev').classList.toggle('opacity-30', appState.cookModeStepIndex === 0);
+          document.getElementById('btn-cook-next').textContent = appState.cookModeStepIndex === appState.currentRecipe.steps.length - 1 ? "Finish 🎉" : "Next Step";
+        };
+        upd();
+        document.getElementById('modal-cook-mode').dataset.update = upd;
+        document.getElementById('modal-cook-mode').classList.remove('hidden');
+      });
+      
+      document.getElementById('btn-close-cook-mode').addEventListener('click', () => document.getElementById('modal-cook-mode').classList.add('hidden'));
+      document.getElementById('btn-cook-prev').addEventListener('click', () => {
+        if (appState.cookModeStepIndex > 0) { appState.cookModeStepIndex--; eval(document.getElementById('modal-cook-mode').dataset.update)(); }
+      });
+      document.getElementById('btn-cook-next').addEventListener('click', () => {
+        if (appState.cookModeStepIndex < appState.currentRecipe.steps.length - 1) { appState.cookModeStepIndex++; eval(document.getElementById('modal-cook-mode').dataset.update)(); }
+        else document.getElementById('modal-cook-mode').classList.add('hidden');
+      });
+
+      document.getElementById('btn-detail-edit-toggle').addEventListener('click', () => {
+        document.getElementById('edit-title').value = appState.currentRecipe.title;
+        setFormDifficulty('edit-difficulty-selector', appState.currentRecipe.difficulty || 'Medium');
+        renderFormTags('edit-category-pills-container', appState.currentRecipe.categories);
+        document.getElementById('edit-prep').value = appState.currentRecipe.prepTime;
+        document.getElementById('edit-cook').value = appState.currentRecipe.cookTime;
+        document.getElementById('edit-servings').value = appState.currentRecipe.servings;
+        document.getElementById('edit-umaya-story').value = appState.currentRecipe.umayaStory;
+        document.getElementById('edit-notes').value = appState.currentRecipe.notes;
+        
+        document.getElementById('edit-ingredients-list').innerHTML = '';
+        if (appState.currentRecipe.ingredients) {
+          appState.currentRecipe.ingredients.forEach(i => addIngredientRow('edit-ingredients-list', i.amount, i.unit, i.name));
+        }
+        document.getElementById('edit-steps-list').innerHTML = '';
+        if (appState.currentRecipe.steps) {
+          appState.currentRecipe.steps.forEach(s => addStepRow('edit-steps-list', s.instruction));
+        }
+        
+        document.getElementById('detail-view-container').classList.add('hidden');
+        document.getElementById('detail-edit-container').classList.remove('hidden');
+      });
+
+      document.getElementById('btn-cancel-edit').addEventListener('click', () => {
+        document.getElementById('detail-view-container').classList.remove('hidden');
+        document.getElementById('detail-edit-container').classList.add('hidden');
+      });
+
+      // Form Interactions (Delegation for Tags & Rows)
+      document.getElementById('edit-difficulty-selector').addEventListener('click', e => { const btn = e.target.closest('.diff-btn'); if(btn) setFormDifficulty('edit-difficulty-selector', btn.dataset.level); });
+      document.getElementById('create-difficulty-selector').addEventListener('click', e => { const btn = e.target.closest('.diff-btn'); if(btn) setFormDifficulty('create-difficulty-selector', btn.dataset.level); });
+      document.getElementById('edit-category-pills-container').addEventListener('click', e => handleTagClick(e, 'edit-category-pills-container'));
+      document.getElementById('create-category-pills-container').addEventListener('click', e => handleTagClick(e, 'create-category-pills-container'));
+      
+      document.getElementById('btn-add-edit-ingredient').addEventListener('click', () => addIngredientRow('edit-ingredients-list'));
+      document.getElementById('btn-add-edit-step').addEventListener('click', () => addStepRow('edit-steps-list'));
+      document.getElementById('btn-add-create-ingredient').addEventListener('click', () => addIngredientRow('create-ingredients-list'));
+      document.getElementById('btn-add-create-step').addEventListener('click', () => addStepRow('create-steps-list'));
+
+      const attachRowRemoval = (id) => {
+        document.getElementById(id).addEventListener('click', e => {
+          if (e.target.closest('.btn-rem')) e.target.closest('div.flex').remove();
+        });
+      };
+      attachRowRemoval('edit-ingredients-list'); attachRowRemoval('edit-steps-list');
+      attachRowRemoval('create-ingredients-list'); attachRowRemoval('create-steps-list');
+
+      // Checklist Toggles
+      const toggleCheck = (e) => {
+        const item = e.target.closest('.chk-item');
+        if (item) {
+          const box = item.querySelector('input[type="checkbox"]');
+          const txt = item.querySelector('.chk-text');
+          const hl = item.querySelector('.chk-highlight');
+          box.checked = !box.checked;
+          if (box.checked) {
+            txt.classList.add('line-through', 'text-[#8E8E93]');
+            if(hl) hl.classList.replace('text-[#E86A33]', 'text-[#8E8E93]');
+          } else {
+            txt.classList.remove('line-through', 'text-[#8E8E93]');
+            if(hl) hl.classList.replace('text-[#8E8E93]', 'text-[#E86A33]');
+          }
+        }
+      };
+      document.getElementById('detail-view-ingredients').addEventListener('click', toggleCheck);
+      document.getElementById('detail-view-steps').addEventListener('click', toggleCheck);
+
+      // Share Logic
+      document.getElementById('btn-detail-share').addEventListener('click', async () => {
+        if (!appState.currentRecipe) return;
+        const r = appState.currentRecipe;
+        const text = `🍲 ${r.title}\n\nPrep: ${r.prepTime} | Cook: ${r.cookTime}\n\nIngredients:\n${r.ingredients.map(i => `- ${i.amount} ${i.unit} ${i.name}`).join('\n')}\n\nSteps:\n${r.steps.map((s, idx) => `${idx+1}. ${s.instruction}`).join('\n')}`;
+        
+        if (navigator.share) {
+          try { await navigator.share({ title: r.title, text: text }); } catch (err) { console.log('Share dismissed'); }
+        } else {
+          navigator.clipboard.writeText(text);
+          alert("Recipe copied to clipboard!");
+        }
+      });
+
+      document.addEventListener('click', e => {
+        if(e.target.closest('#btn-scale-up')) {
+          appState.currentScale += 0.5;
+          renderDetailIngredients();
+        }
+        if(e.target.closest('#btn-scale-down')) {
+          if(appState.currentScale > 0.5) {
+            appState.currentScale -= 0.5;
+            renderDetailIngredients();
+          }
+        }
+      });
+
+      // Save Actions
+      document.getElementById('btn-save-recipe-changes').addEventListener('click', () => {
+        const title = document.getElementById('edit-title').value.trim();
+        if (!title) return alert("Title required.");
+        const cats = JSON.parse(document.getElementById('edit-category-pills-container').dataset.tags || '[]');
+        if (!cats.length) return alert("Select at least one category tag.");
+        
+        const ings = Array.from(document.querySelectorAll('#edit-ingredients-list .ing-row')).map((row,i) => ({ id: `ing-${Date.now()}-${i}`, amount: row.querySelector('.ing-amt').value, unit: row.querySelector('.ing-unit').value, name: row.querySelector('.ing-name').value })).filter(i=>i.name);
+        const stps = Array.from(document.querySelectorAll('#edit-steps-list .step-row')).map((row,i) => ({ id: `st-${Date.now()}-${i}`, instruction: row.querySelector('.step-txt').value })).filter(s=>s.instruction);
+
+        const r = {
+          ...appState.currentRecipe,
+          title, categories: cats, difficulty: document.getElementById('edit-difficulty-selector').dataset.diff,
+          prepTime: document.getElementById('edit-prep').value, cookTime: document.getElementById('edit-cook').value, servings: document.getElementById('edit-servings').value,
+          umayaStory: document.getElementById('edit-umaya-story').value, notes: document.getElementById('edit-notes').value, ingredients: ings, steps: stps
+        };
+        saveRecipe(r);
+        openDetail(r);
+      });
+
+      document.getElementById('btn-delete-recipe').addEventListener('click', () => {
+        if (confirm("Delete this heirloom recipe?")) {
+          deleteRecipe(appState.currentRecipe.id);
+          document.getElementById('modal-recipe-detail').classList.add('hidden');
+        }
+      });
+
+      document.getElementById('btn-save-new-recipe').addEventListener('click', () => {
+        const title = document.getElementById('create-title').value.trim();
+        if (!title) return alert("Title required.");
+        const cats = JSON.parse(document.getElementById('create-category-pills-container').dataset.tags || '[]');
+        if (!cats.length) return alert("Select at least one category tag.");
+        
+        const ings = Array.from(document.querySelectorAll('#create-ingredients-list .ing-row')).map((row,i) => ({ id: `ing-${Date.now()}-${i}`, amount: row.querySelector('.ing-amt').value, unit: row.querySelector('.ing-unit').value, name: row.querySelector('.ing-name').value })).filter(i=>i.name);
+        const stps = Array.from(document.querySelectorAll('#create-steps-list .step-row')).map((row,i) => ({ id: `st-${Date.now()}-${i}`, instruction: row.querySelector('.step-txt').value })).filter(s=>s.instruction);
+
+        const r = {
+          id: `recipe-${Date.now()}`, title, categories: cats, difficulty: document.getElementById('create-difficulty-selector').dataset.diff,
+          prepTime: document.getElementById('create-prep').value, cookTime: document.getElementById('create-cook').value, servings: document.getElementById('create-servings').value,
+          umayaStory: document.getElementById('create-umaya-story').value, notes: document.getElementById('create-notes').value,
+          ingredients: ings.length ? ings : [{id:'1',amount:'1',unit:'batch',name:'Love'}], steps: stps.length ? stps : [{id:'1',instruction:'Cook with care.'}],
+          isFavorite: false, createdAt: Date.now()
+        };
+        saveRecipe(r);
+        document.getElementById('modal-create-recipe').classList.add('hidden');
+        openDetail(r);
+      });
+
+      // Settings: Reset Data
+      document.getElementById('btn-reset-starter-data').addEventListener('click', () => {
+        if (confirm("Reset all recipes to Umaya's original starters? This cannot be undone.")) {
+          appState.recipes = STARTER_RECIPES;
+          STARTER_RECIPES.forEach(r => saveRecipe(r));
+          renderRecipeList();
+          document.getElementById('modal-settings').classList.add('hidden');
+        }
+      });
+    });
+  </script>
+
+  <!-- PWA Service Worker Registration -->
+  <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', () => {
+        navigator.serviceWorker.register('./sw.js').catch(err => {
+          console.log('ServiceWorker registration ignored (missing/dev)', err);
+        });
+      });
+    }
+  </script>
+</body>
+</html>
